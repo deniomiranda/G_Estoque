@@ -1,0 +1,14 @@
+{
+  "name": "gestao-estoque",
+  "version": "1.0.0",
+  "description": "Sistema de Controle de Estoque - HTML, CSS, JavaScript e Node.js (SQLite nativo)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "license": "UNLICENSED",
+  "private": true
+}

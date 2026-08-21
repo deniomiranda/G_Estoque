@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestão de Estoque</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg>
+      </div>
+      <div class="brand-text">
+        <strong>Gestão de Estoque</strong>
+        <span>Controle operacional</span>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <button class="nav-item active" data-view="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+        Dashboard
+      </button>
+      <button class="nav-item" data-view="produtos">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/></svg>
+        Produtos
+      </button>
+      <button class="nav-item" data-view="movimentacoes">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 21l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+        Movimentações
+      </button>
+      <button class="nav-item" data-view="relatorios">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-6 3 3 5-8"/></svg>
+        Relatórios
+      </button>
+    </nav>
+
+    <div class="nav-footer">
+      Sistema de Estoque v1.0<br>
+      Banco local (SQLite)
+    </div>
+  </aside>
+
+  <!-- ===================== MAIN ===================== -->
+  <div class="main">
+
+    <div class="topbar">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="globalSearch" placeholder="Busca inteligente: nome, código, categoria ou fornecedor..." autocomplete="off">
+        <div class="search-results" id="searchResults"></div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-outline" id="btnGoDashboard" title="Ir para o Dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+          Dashboard
+        </button>
+        <button class="btn btn-primary" id="btnNovaMovimentacaoTop">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          Nova movimentação
+        </button>
+      </div>
+    </div>
+
+    <!-- ================= VIEW: DASHBOARD ================= -->
+    <section class="view" id="view-dashboard">
+      <div class="view-header">
+        <div>
+          <h1>Dashboard</h1>
+          <p>Visão geral do estoque em tempo real</p>
+        </div>
+        <div class="view-header-actions">
+          <button class="btn btn-outline" id="btnRefreshDash">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
+            Atualizar
+          </button>
+        </div>
+      </div>
+
+      <div class="kpi-grid" id="kpiGrid"></div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <p class="panel-title">Movimentações — últimos 7 dias</p>
+          <p class="panel-sub">Entradas vs. saídas registradas por dia</p>
+          <canvas id="chartMov" height="220"></canvas>
+          <div class="legend">
+            <div class="legend-item"><span class="legend-dot" style="background:#0f9d70"></span>Entradas</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#d23b3b"></span>Saídas</div>
+          </div>
+        </div>
+        <div class="panel">
+          <p class="panel-title">Valor em estoque por categoria</p>
+          <p class="panel-sub">Custo total parado por categoria</p>
+          <canvas id="chartCategorias" height="220"></canvas>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-top:14px;">
+        <div class="panel">
+          <p class="panel-title">Últimas movimentações</p>
+          <p class="panel-sub">As 8 movimentações mais recentes</p>
+          <div id="ultimasMovimentacoes"></div>
+        </div>
+        <div class="panel">
+          <p class="panel-title">Alertas de estoque</p>
+          <p class="panel-sub">Produtos que exigem atenção agora</p>
+          <div id="alertasEstoque"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= VIEW: PRODUTOS ================= -->
+    <section class="view hidden" id="view-produtos">
+      <div class="view-header">
+        <div>
+          <h1>Produtos</h1>
+          <p>Cadastro de itens, estoque mínimo e máximo</p>
+        </div>
+        <div class="view-header-actions">
+          <button class="btn btn-primary" id="btnNovoProduto">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            Novo produto
+          </button>
+        </div>
+      </div>
+
+      <div class="filters-bar">
+        <div class="search-mini">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" id="filtroProdutoBusca" placeholder="Filtrar por nome, código ou fornecedor...">
+        </div>
+        <div class="field-inline">
+          <select id="filtroCategoria"><option value="">Todas as categorias</option></select>
+        </div>
+        <div class="chip-group" id="filtroStatusChips">
+          <button class="chip active" data-status="todos">Todos</button>
+          <button class="chip" data-status="ok">Ok</button>
+          <button class="chip" data-status="baixo">Estoque baixo</button>
+          <button class="chip" data-status="zerado">Zerado</button>
+          <button class="chip" data-status="excesso">Excesso</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Produto</th>
+              <th>Categoria</th>
+              <th class="text-right">Estoque</th>
+              <th class="text-right">Mín. / Máx.</th>
+              <th>Status</th>
+              <th class="text-right">Custo unit.</th>
+              <th class="text-right">Valor total</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tabelaProdutos"></tbody>
+        </table>
+        <div class="empty-state hidden" id="produtosEmptyState">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/></svg>
+          <p>Nenhum produto encontrado com os filtros atuais.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= VIEW: MOVIMENTAÇÕES ================= -->
+    <section class="view hidden" id="view-movimentacoes">
+      <div class="view-header">
+        <div>
+          <h1>Movimentações</h1>
+          <p>Entradas, saídas e correções de estoque</p>
+        </div>
+        <div class="view-header-actions">
+          <button class="btn btn-primary" id="btnNovaMovimentacao">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            Nova movimentação
+          </button>
+        </div>
+      </div>
+
+      <div class="filters-bar">
+        <div class="search-mini">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" id="filtroMovBusca" placeholder="Filtrar por produto ou observação...">
+        </div>
+        <div class="chip-group" id="filtroTipoChips">
+          <button class="chip active" data-tipo="">Todos</button>
+          <button class="chip" data-tipo="entrada">Entradas</button>
+          <button class="chip" data-tipo="saida">Saídas</button>
+          <button class="chip" data-tipo="correcao">Correções</button>
+        </div>
+        <div class="field-inline">
+          <input type="date" id="filtroDataInicio">
+          <span class="muted">até</span>
+          <input type="date" id="filtroDataFim">
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Produto</th>
+              <th>Tipo</th>
+              <th class="text-right">Qtd.</th>
+              <th class="text-right">Antes → Depois</th>
+              <th>Documento</th>
+              <th>Observação</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaMovimentacoes"></tbody>
+        </table>
+        <div class="empty-state hidden" id="movEmptyState">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 21l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+          <p>Nenhuma movimentação encontrada.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= VIEW: RELATÓRIOS ================= -->
+    <section class="view hidden" id="view-relatorios">
+      <div class="view-header">
+        <div>
+          <h1>Relatórios</h1>
+          <p>Sugestão de compras, posição de estoque e histórico</p>
+        </div>
+      </div>
+
+      <div class="report-tabs">
+        <button class="report-tab active" data-report="sugestao">Sugestão de compra</button>
+        <button class="report-tab" data-report="estoque">Posição de estoque</button>
+      </div>
+
+      <div class="report-panel active" id="report-sugestao">
+        <div class="filters-bar">
+          <p class="muted" style="margin:0;">Produtos com estoque atual igual ou abaixo do mínimo definido. Quantidade sugerida = estoque máximo − estoque atual.</p>
+          <button class="btn btn-outline btn-sm" id="btnExportSugestao" style="margin-left:auto;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            Exportar CSV
+          </button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Produto</th>
+                <th>Fornecedor</th>
+                <th class="text-right">Atual</th>
+                <th class="text-right">Mínimo</th>
+                <th class="text-right">Máximo</th>
+                <th class="text-right">Sugestão de compra</th>
+                <th class="text-right">Custo estimado</th>
+                <th>Urgência</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaSugestao"></tbody>
+          </table>
+          <div class="empty-state hidden" id="sugestaoEmptyState">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+            <p>Nenhum produto precisa de reposição no momento.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="report-panel" id="report-estoque">
+        <div class="filters-bar">
+          <p class="muted" style="margin:0;">Posição completa de estoque, valorizada a custo.</p>
+          <button class="btn btn-outline btn-sm" id="btnExportEstoque" style="margin-left:auto;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            Exportar CSV
+          </button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Produto</th>
+                <th>Categoria</th>
+                <th class="text-right">Estoque</th>
+                <th>Status</th>
+                <th class="text-right">Custo unit.</th>
+                <th class="text-right">Valor total</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaEstoque"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<!-- ===================== MODAL: PRODUTO ===================== -->
+<div class="modal-overlay" id="modalProduto">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modalProdutoTitulo">Novo produto</h2>
+      <button class="modal-close" data-close="modalProduto">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-alert" id="produtoFormAlert"></div>
+      <form id="formProduto">
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Código <span class="req">*</span></label>
+            <input type="text" id="fCodigo" required>
+          </div>
+          <div class="form-field">
+            <label>Nome do produto <span class="req">*</span></label>
+            <input type="text" id="fNome" required>
+          </div>
+          <div class="form-field">
+            <label>Categoria</label>
+            <input type="text" id="fCategoria" list="listaCategorias" placeholder="Ex: Ferragens">
+            <datalist id="listaCategorias"></datalist>
+          </div>
+          <div class="form-field">
+            <label>Unidade</label>
+            <select id="fUnidade">
+              <option>UN</option><option>CX</option><option>PAR</option><option>KG</option><option>L</option><option>M</option><option>PCT</option>
+            </select>
+          </div>
+          <div class="form-field full">
+            <label>Fornecedor</label>
+            <input type="text" id="fFornecedor">
+          </div>
+          <div class="form-field">
+            <label>Estoque mínimo <span class="req">*</span></label>
+            <input type="number" id="fEstoqueMinimo" min="0" step="any" required>
+            <span class="form-hint">Abaixo disso, o produto entra em alerta.</span>
+          </div>
+          <div class="form-field">
+            <label>Estoque máximo <span class="req">*</span></label>
+            <input type="number" id="fEstoqueMaximo" min="0" step="any" required>
+            <span class="form-hint">Usado para calcular sugestão de compra.</span>
+          </div>
+          <div class="form-field">
+            <label>Preço de custo (R$)</label>
+            <input type="number" id="fPrecoCusto" min="0" step="0.01">
+          </div>
+          <div class="form-field">
+            <label>Preço de venda (R$)</label>
+            <input type="number" id="fPrecoVenda" min="0" step="0.01">
+          </div>
+          <div class="form-field" id="wrapEstoqueInicial">
+            <label>Estoque inicial</label>
+            <input type="number" id="fEstoqueInicial" min="0" step="any" value="0">
+            <span class="form-hint">Somente na criação. Para ajustes depois, use "Movimentação".</span>
+          </div>
+          <div class="form-field">
+            <label>Localização</label>
+            <input type="text" id="fLocalizacao" placeholder="Ex: A1-01">
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" data-close="modalProduto">Cancelar</button>
+      <button class="btn btn-primary" id="btnSalvarProduto">Salvar produto</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL: MOVIMENTAÇÃO ===================== -->
+<div class="modal-overlay" id="modalMovimentacao">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Nova movimentação de estoque</h2>
+      <button class="modal-close" data-close="modalMovimentacao">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-alert" id="movFormAlert"></div>
+
+      <div class="seg-control">
+        <button type="button" class="seg-btn active" data-tipo="entrada">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+          Entrada
+        </button>
+        <button type="button" class="seg-btn" data-tipo="saida">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+          Saída
+        </button>
+        <button type="button" class="seg-btn" data-tipo="correcao">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20a8 8 0 1 0-8-8"/><path d="M4 4v6h6"/></svg>
+          Correção
+        </button>
+      </div>
+
+      <form id="formMovimentacao">
+        <div class="form-grid" style="margin-top:14px;">
+          <div class="form-field full">
+            <label>Produto <span class="req">*</span></label>
+            <input type="text" id="fMovProdutoBusca" placeholder="Digite para buscar o produto..." autocomplete="off">
+            <input type="hidden" id="fMovProdutoId">
+            <div id="movProdutoResultados" class="search-results" style="position:relative; top:0; display:none; box-shadow:none; border:1px solid var(--border);"></div>
+          </div>
+
+          <div class="form-field full hidden" id="wrapEstoqueAtualInfo">
+            <div class="stock-preview">
+              <span>Estoque atual: <b id="movEstoqueAtualTxt">—</b></span>
+              <span id="movEstoquePreviewTxt" class="muted"></span>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label id="labelQuantidade">Quantidade <span class="req">*</span></label>
+            <input type="number" id="fMovQuantidade" min="0" step="any">
+          </div>
+          <div class="form-field">
+            <label>Nº do documento</label>
+            <input type="text" id="fMovDocumento" placeholder="NF, pedido, OS...">
+          </div>
+          <div class="form-field full">
+            <label id="labelObservacao">Observação</label>
+            <textarea id="fMovObservacao" placeholder="Detalhe o motivo da movimentação..."></textarea>
+            <span class="form-hint" id="obsHint">Obrigatório para correções de estoque.</span>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" data-close="modalMovimentacao">Cancelar</button>
+      <button class="btn btn-primary" id="btnSalvarMovimentacao">Confirmar movimentação</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script src="/js/api.js"></script>
+<script src="/js/charts.js"></script>
+<script src="/js/app.js"></script>
+<script src="/js/produtos.js"></script>
+<script src="/js/movimentacoes.js"></script>
+<script src="/js/dashboard.js"></script>
+<script src="/js/relatorios.js"></script>
+</body>
+</html>
