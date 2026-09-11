@@ -20,6 +20,9 @@ C:\Claude_Code\Gestão de Estoque\
 ├── public\               ← todo o front-end (HTML, CSS, JS)
 ├── server.js             ← servidor
 ├── package.json
+├── iniciar.bat           ← atalho para abrir o sistema
+├── iniciar.vbs           ← usado pelo iniciar.bat para rodar 100% oculto
+├── parar.bat             ← atalho para encerrar o servidor
 └── LEIA-ME.md
 ```
 
@@ -38,7 +41,55 @@ automaticamente, já com as tabelas e 5 produtos de exemplo cadastrados.
   node -v
   ```
 
-## ▶️ Como rodar
+## ▶️ Como abrir o sistema (forma mais fácil)
+
+Dentro da pasta do projeto tem um arquivo **`iniciar.bat`**. Basta dar
+**duplo clique** nele:
+
+1. O servidor sobe **totalmente em segundo plano** — não aparece nenhuma
+   janela, nem mesmo minimizada na barra de tarefas.
+2. Depois de alguns segundos, o navegador abre sozinho em
+   `http://localhost:3000` com o sistema pronto para uso.
+
+> O `iniciar.bat` funciona chamando um pequeno script auxiliar
+> (`iniciar.vbs`) que roda o Node.js de forma oculta. Os dois arquivos
+> precisam ficar juntos, na mesma pasta.
+
+Como não há mais nenhuma janela visível, para **fechar o sistema** você
+**precisa** usar o `parar.bat` (dê duplo clique nele) — ele localiza o
+servidor pelo identificador de processo salvo automaticamente em
+`servidor.pid` e o encerra.
+
+Se por algum motivo o `parar.bat` não conseguir encerrar (raro), abra o
+**Gerenciador de Tarefas** do Windows, procure por **node.exe** na aba
+"Detalhes" e finalize a tarefa manualmente.
+
+> Um arquivo `servidor.log` também é criado na pasta — é apenas o registro
+> do que o servidor exibiria no terminal, útil só se algo der errado. Pode
+> ignorá-lo ou apagá-lo a qualquer momento com o servidor parado.
+
+> **Nota:** como os arquivos vieram de um `.zip` baixado, o Windows pode
+> exibir um aviso de segurança ("Windows protegeu o computador") na
+> primeira vez. Se isso acontecer, clique com o botão direito no arquivo
+> `.zip` → **Propriedades** → marque **Desbloquear** → **OK**, antes de
+> extrair. Isso é um comportamento padrão do Windows para arquivos
+> baixados da internet, não um problema do sistema em si.
+
+### Criar um atalho na Área de Trabalho
+
+Se quiser abrir com um ícone no desktop, sem precisar entrar na pasta:
+
+1. Clique com o botão direito no arquivo `iniciar.bat`.
+2. Escolha **Enviar para → Área de trabalho (criar atalho)**.
+3. (Opcional) Clique com o botão direito no atalho criado → **Propriedades**
+   → **Alterar Ícone...** para personalizar o ícone.
+4. Você pode renomear o atalho para algo como "Gestão de Estoque".
+
+Agora é só dar duplo clique nesse atalho sempre que quiser abrir o sistema.
+
+## ▶️ Como abrir manualmente (alternativa)
+
+Se preferir não usar o `.bat`, também funciona assim:
 
 1. Abra o **Prompt de Comando** (ou PowerShell) na pasta do projeto:
    ```
@@ -48,18 +99,11 @@ automaticamente, já com as tabelas e 5 produtos de exemplo cadastrados.
    ```
    node server.js
    ```
-3. Você verá uma mensagem confirmando que o servidor está rodando. Abra o
-   navegador em:
+3. Abra o navegador em:
    ```
    http://localhost:3000
    ```
-4. Pronto — o sistema está funcionando, com o banco salvo em
-   `BD\bd.db`.
-
-Para parar o servidor, volte ao Prompt de Comando e pressione `Ctrl + C`.
-
-> Dica: se quiser que ele inicie sempre na mesma janela, pode criar um atalho
-> com um arquivo `iniciar.bat` contendo `node server.js` e `pause`.
+4. Para parar, volte à janela do Prompt e pressione `Ctrl + C`.
 
 ## 🧭 Funcionalidades
 

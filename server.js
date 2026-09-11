@@ -19,6 +19,17 @@ const ROOT_DIR = __dirname;
 const PUBLIC_DIR = path.join(ROOT_DIR, 'public');
 const DB_DIR = path.join(ROOT_DIR, 'BD');
 const DB_PATH = path.join(DB_DIR, 'bd.db');
+const PID_FILE = path.join(ROOT_DIR, 'servidor.pid');
+
+// Grava o PID do processo em um arquivo, para que o servidor possa ser
+// encerrado corretamente mesmo quando roda oculto (sem nenhuma janela visível).
+fs.writeFileSync(PID_FILE, String(process.pid));
+function limparArquivoPid() {
+  try { fs.unlinkSync(PID_FILE); } catch (e) { /* já removido ou inacessível */ }
+}
+process.on('exit', limparArquivoPid);
+process.on('SIGINT', () => process.exit());
+process.on('SIGTERM', () => process.exit());
 
 // ---------------------------------------------------------------------------
 // Inicialização do banco de dados
@@ -234,10 +245,6 @@ async function handleApi(req, res, url) {
       if (!existente) return sendJson(res, 404, { erro: 'Produto não encontrado.' });
       db.prepare("UPDATE produtos SET ativo = 0, atualizado_em = datetime('now','localtime') WHERE id = ?").run(id);
       return sendJson(res, 200, { ok: true });
-    }
-
-    if (parts[0] === 'produtos' && parts[1] === undefined) {
-      // já tratado acima
     }
 
     // ---------- CATEGORIAS ----------
